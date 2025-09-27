@@ -1,4 +1,8 @@
-## Simple clipboard-manager
+# Simple clipboard-manager
 
-### [Tauri](https://v2.tauri.app) + [Rust](https://rust-lang.org)
+## Stack
 
+- #### 💎 [Tauri](https://v2.tauri.app)
+- #### 🦀 [Rust](https://rust-lang.org)
+- #### ⚡️ [Vite](https://vite.dev)
+- #### 🌟 [React](https://react.dev)

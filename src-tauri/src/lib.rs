@@ -27,7 +27,13 @@ pub fn run() {
             
             // Tray
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&quit_item])?;
+            let hide_item = MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?;
+            let show_item = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[
+                &hide_item,
+                &show_item,
+                &quit_item,
+                ])?;
 
             TrayIconBuilder::new()
                 .menu(&menu)
@@ -35,6 +41,14 @@ pub fn run() {
                 .icon(app.default_window_icon().unwrap().clone())
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => app.exit(1),
+                    "hide" => {
+                        let window = app.get_webview_window("main").unwrap();
+                        window.hide().unwrap();
+                    },
+                    "show" => {
+                        let window = app.get_webview_window("main").unwrap();
+                        window.show().unwrap();
+                    },
                     _ => {}
                 })
                 .build(app)?;
