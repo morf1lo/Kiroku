@@ -7,6 +7,12 @@ body {
     background-color: #333;
 }
 
+.app {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .items {
     display: flex;
     position: relative;
@@ -32,7 +38,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
 }
 
 .item-text {
@@ -40,4 +46,11 @@ body {
     background-color: #555;
     color: #f1f1f1;
     border-radius: 3px;
+}
+
+.header {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding-top: 10px;
 }

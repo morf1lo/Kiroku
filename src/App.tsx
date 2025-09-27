@@ -22,12 +22,19 @@ function App() {
     invoke("copy_to_clipboard", { item });
   };
 
+  const clearHistory = () => {
+    invoke<HistoryItem[]>("clear_history").then(() => setHistory([]));
+  };
+
   const imagePreview = (item: HistoryItem) => {
     setPreviewImage(item.data);
   };
 
   return (
     <div className="app">
+      <div className="header">
+        <Button text="Clear history" onClick={clearHistory} />
+      </div>
       <div className="items">
         {history.map((item, i) => (
           <div className="item" key={i}>

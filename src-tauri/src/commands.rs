@@ -46,3 +46,8 @@ pub fn copy_to_clipboard(app: AppHandle, item: HistoryItem) -> Result<(), String
 
     Ok(())
 }
+
+#[tauri::command]
+pub fn clear_history(state: tauri::State<HistoryState>) {
+    state.items.lock().unwrap().clear();
+}
