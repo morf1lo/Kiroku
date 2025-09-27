@@ -45,8 +45,8 @@ function App() {
                   <Button text="Copy" onClick={() => copy(item)} />
                 </div>
                 <p className="item-text" style={{ fontFamily: "cursive" }}>
-                  {item.data.length > 100 ? (
-                    <>{item.data.slice(0, 100) + " ..."}</>
+                  {item.data.length > 200 ? (
+                    <>{item.data.slice(0, 200) + " ..."}</>
                   ) : (
                     <>{item.data}</>
                   )}
@@ -92,6 +92,7 @@ function App() {
               maxHeight: "90%",
               borderRadius: "8px",
               boxShadow: "0 0 20px rgba(0,0,0,0.8)",
+              userSelect: "none",
             }}
             onClick={(e) => e.stopPropagation()}
           />

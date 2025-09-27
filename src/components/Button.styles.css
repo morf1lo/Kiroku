@@ -1,18 +1,17 @@
 .btn {
-    font-family: monospace;
-    color: #f1f1f1;
-    background: transparent;
-    border: 1px solid #111;
-    border-radius: 5px;
-    padding: 4px 10px;
+  font-family: monospace;
+  color: #f1f1f1;
+  background: transparent;
+  border: 1px solid #111;
+  border-radius: 5px;
+  padding: 4px 10px;
+  transition: background-color 0.1s;
 
-    &:hover {
-        transition: 0.09s;
-        background: #555;
-    }
+  &:hover {
+    background-color: #555;
+  }
 
-    &:focus {
-        transition: 0.09s;
-        background-color: #888;
-    }
+  &:active {
+    background-color: #888;
+  }
 }
