@@ -20,7 +20,7 @@ it will appear in `src-tauri/target/release`
 
 # Stack
 
-#### Backend
+### Backend
 - #### 🦀 [Rust](https://rust-lang.org) + ❤️ [Tauri](https://v2.tauri.app)
-#### Frontend
+### Frontend
 - #### ⚡️ [Vite](https://vite.dev) + 🌟 [React](https://react.dev)
