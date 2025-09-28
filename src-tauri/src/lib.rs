@@ -68,16 +68,17 @@ pub fn run() {
                 .build(app)?;
 
             // Storing history
+            let thread_handle = handle.clone();
             std::thread::spawn(move || {
                 let mut last_text = String::new();
                 let mut last_image: Option<Vec<u8>> = None;
 
                 loop {
-                    let clipboard = handle.clipboard();
+                    let clipboard = thread_handle.clipboard();
 
                     if let Ok(text) = clipboard.read_text() {
                         if text != last_text {
-                            let state = handle.state::<commands::HistoryState>();
+                            let state = thread_handle.state::<commands::HistoryState>();
                             let mut items = state.items.lock().unwrap();
                             items.push(commands::HistoryItem::Text(text.clone()));
                             if items.len() > 50 {
@@ -106,7 +107,7 @@ pub fn run() {
                             let base64_png =
                                 base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
 
-                            let state = handle.state::<commands::HistoryState>();
+                            let state = thread_handle.state::<commands::HistoryState>();
                             let mut items = state.items.lock().unwrap();
                             items.push(commands::HistoryItem::Image(base64_png));
                             if items.len() > 50 {
