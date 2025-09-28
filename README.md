@@ -23,6 +23,6 @@ it will appear in `src-tauri/target/release`
 ### Backend
 - #### ❤️ [Tauri](https://v2.tauri.app)
 - #### 🦀 [Rust](https://rust-lang.org)
-#### Frontend
+### Frontend
 - #### ⚡️ [Vite](https://vite.dev)
 - #### 🌟 [React](https://react.dev)
