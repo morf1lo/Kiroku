@@ -11,7 +11,11 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let state = commands::HistoryState { items: Mutex::new(Vec::new()) };
+    let state = commands::HistoryState {
+        items: Mutex::new(Vec::new()),
+        last_text: Mutex::new(String::new()),
+        last_image: Mutex::new(String::new()),
+    };
 
     tauri::Builder::default()
         .manage(state)
@@ -77,28 +81,28 @@ pub fn run() {
             // Storing history
             let thread_handle = handle.clone();
             std::thread::spawn(move || {
-                let mut last_text = String::new();
-                let mut last_image: Option<Vec<u8>> = None;
-
                 loop {
                     let clipboard = thread_handle.clipboard();
+                    let state = thread_handle.state::<commands::HistoryState>();
 
                     if let Ok(text) = clipboard.read_text() {
-                        if text != last_text {
+                        let mut last_text = state.last_text.lock().unwrap();
+                        if text != *last_text {
                             let state = thread_handle.state::<commands::HistoryState>();
                             let mut items = state.items.lock().unwrap();
                             items.push(commands::HistoryItem::Text(text.clone()));
                             if items.len() > 50 {
                                 items.remove(0);
                             }
-                            last_text = text;
+                            *last_text = text;
                         }
                     }
 
                     if let Ok(image) = clipboard.read_image() {
                         let bytes = image.rgba().to_vec();
 
-                        if last_image.as_ref() != Some(&bytes) {
+                        let mut last_image = state.last_image.lock().unwrap();
+                        if *last_image != base64::engine::general_purpose::STANDARD.encode(&bytes) {
                             let dyn_image = RgbaImage::from_raw(
                                 image.width() as u32,
                                 image.height() as u32,
@@ -113,14 +117,13 @@ pub fn run() {
 
                             let base64_png =
                                 base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
-
-                            let state = thread_handle.state::<commands::HistoryState>();
+                            
                             let mut items = state.items.lock().unwrap();
-                            items.push(commands::HistoryItem::Image(base64_png));
+                            items.push(commands::HistoryItem::Image(base64_png.clone()));
                             if items.len() > 50 {
                                 items.remove(0);
                             }
-                            last_image = Some(bytes);
+                            *last_image = base64_png;
                         }
                     }
 
