@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 use base64::Engine;
-use tauri::{menu::{Menu, MenuItem}, tray::{TrayIconBuilder, TrayIconEvent}, Manager};
+use tauri::{menu::{Menu, MenuItem}, tray::{TrayIconBuilder, TrayIconEvent}, Manager, WindowEvent};
 use image::{DynamicImage, ImageOutputFormat, RgbaImage};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 
@@ -20,6 +20,13 @@ pub fn run() {
             commands::copy_to_clipboard,
             commands::clear_history,
         ])
+        .on_window_event(move |window, event| match event {
+            WindowEvent::CloseRequested { api, .. } => {
+                api.prevent_close();
+                let _ = window.hide();
+            },
+            _ => {}
+        })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
@@ -44,11 +51,11 @@ pub fn run() {
                     "quit" => app.exit(1),
                     "show" => {
                         let window = app.get_webview_window("main").unwrap();
-                        window.show().unwrap();
+                        let _ = window.show();
                     },
                     "hide" => {
                         let window = app.get_webview_window("main").unwrap();
-                        window.hide().unwrap();
+                        let _ = window.hide();
                     },
                     _ => {}
                 })
