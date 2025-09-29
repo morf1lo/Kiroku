@@ -1,7 +1,7 @@
 use base64::Engine;
 use tauri::{image::Image, AppHandle};
 use tauri_plugin_clipboard_manager::ClipboardExt;
-use std::sync::Mutex;
+use std::{collections::VecDeque, sync::Mutex};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -12,13 +12,14 @@ pub enum HistoryItem {
 }
 
 pub struct HistoryState {
-    pub items: Mutex<Vec<HistoryItem>>,
+    pub items: Mutex<VecDeque<HistoryItem>>,
     pub last_text: Mutex<String>,
     pub last_image: Mutex<String>,
+    pub last_image_hash: Mutex<u64>,
 }
 
 #[tauri::command]
-pub fn get_history(state: tauri::State<HistoryState>) -> Vec<HistoryItem> {
+pub fn get_history(state: tauri::State<HistoryState>) -> VecDeque<HistoryItem> {
     state.items.lock().unwrap().clone()
 }
 
@@ -54,6 +55,7 @@ pub fn clear_history(state: tauri::State<HistoryState>, app: AppHandle) {
     state.items.lock().unwrap().clear();
     state.last_text.lock().unwrap().clear();
     state.last_image.lock().unwrap().clear();
+    *state.last_image_hash.lock().unwrap() = 0u64;
 
     let clipboard = app.clipboard();
     let _ = clipboard.write_text("");

@@ -1,6 +1,7 @@
 mod commands;
 
-use std::io::Cursor;
+use std::hash::{DefaultHasher, Hash, Hasher};
+use std::{collections::VecDeque, io::Cursor};
 use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
@@ -12,9 +13,10 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let state = commands::HistoryState {
-        items: Mutex::new(Vec::new()),
+        items: Mutex::new(VecDeque::new()),
         last_text: Mutex::new(String::new()),
         last_image: Mutex::new(String::new()),
+        last_image_hash: Mutex::new(0u64),
     };
 
     tauri::Builder::default()
@@ -88,11 +90,10 @@ pub fn run() {
                     if let Ok(text) = clipboard.read_text() {
                         let mut last_text = state.last_text.lock().unwrap();
                         if text != *last_text {
-                            let state = thread_handle.state::<commands::HistoryState>();
                             let mut items = state.items.lock().unwrap();
-                            items.push(commands::HistoryItem::Text(text.clone()));
+                            items.push_back(commands::HistoryItem::Text(text.clone()));
                             if items.len() > 50 {
-                                items.remove(0);
+                                items.pop_front();
                             }
                             *last_text = text;
                         }
@@ -101,32 +102,35 @@ pub fn run() {
                     if let Ok(image) = clipboard.read_image() {
                         let bytes = image.rgba().to_vec();
 
-                        let dyn_image = RgbaImage::from_raw(
-                            image.width() as u32,
-                            image.height() as u32,
-                            bytes.clone(),
-                        ).unwrap();
+                        let hash = hash_bytes(&bytes);
 
-                        let mut buf = Cursor::new(Vec::new());
-                        DynamicImage::ImageRgba8(dyn_image)
-                            .write_to(&mut buf, ImageOutputFormat::Png)
-                            .unwrap();
+                        let mut last_hash = state.last_image_hash.lock().unwrap();
+                        if *last_hash != hash {
+                            let dyn_image = RgbaImage::from_raw(
+                                image.width() as u32,
+                                image.height() as u32,
+                                bytes.clone(),
+                            ).unwrap();
 
-                        let base64_png =
-                            base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
+                            let mut buf = Cursor::new(Vec::new());
+                            DynamicImage::ImageRgba8(dyn_image)
+                                .write_to(&mut buf, ImageOutputFormat::Png)
+                                .unwrap();
 
-                        let mut last_image = state.last_image.lock().unwrap();
-                        if *last_image != base64_png {
+                            let base64_png =
+                                base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
+
                             let mut items = state.items.lock().unwrap();
-                            items.push(commands::HistoryItem::Image(base64_png.clone()));
+                            items.push_back(commands::HistoryItem::Image(base64_png.clone()));
                             if items.len() > 50 {
-                                items.remove(0);
+                                items.pop_front();
                             }
-                            *last_image = base64_png;
+
+                            *last_hash = hash;
                         }
                     }
 
-                    thread::sleep(Duration::from_millis(500));
+                    thread::sleep(Duration::from_millis(2000));
                 }
             });
 
@@ -134,4 +138,10 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn hash_bytes(bytes: &[u8]) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    bytes.hash(&mut hasher);
+    hasher.finish()
 }
