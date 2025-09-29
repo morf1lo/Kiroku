@@ -101,23 +101,22 @@ pub fn run() {
                     if let Ok(image) = clipboard.read_image() {
                         let bytes = image.rgba().to_vec();
 
-                        let mut last_image = state.last_image.lock().unwrap();
-                        if *last_image != base64::engine::general_purpose::STANDARD.encode(&bytes) {
-                            let dyn_image = RgbaImage::from_raw(
-                                image.width() as u32,
-                                image.height() as u32,
-                                bytes.clone(),
-                            )
+                        let dyn_image = RgbaImage::from_raw(
+                            image.width() as u32,
+                            image.height() as u32,
+                            bytes.clone(),
+                        ).unwrap();
+
+                        let mut buf = Cursor::new(Vec::new());
+                        DynamicImage::ImageRgba8(dyn_image)
+                            .write_to(&mut buf, ImageOutputFormat::Png)
                             .unwrap();
 
-                            let mut buf = Cursor::new(Vec::new());
-                            DynamicImage::ImageRgba8(dyn_image)
-                                .write_to(&mut buf, ImageOutputFormat::Png)
-                                .unwrap();
+                        let base64_png =
+                            base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
 
-                            let base64_png =
-                                base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
-                            
+                        let mut last_image = state.last_image.lock().unwrap();
+                        if *last_image != base64_png {
                             let mut items = state.items.lock().unwrap();
                             items.push(commands::HistoryItem::Image(base64_png.clone()));
                             if items.len() > 50 {
