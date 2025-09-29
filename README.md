@@ -1,3 +1,5 @@
+## Kiroku - is a clipboard manager that stores history of copied text and images
+
 # How to run?
 
 you need [Rust](https://rust-lang.org) and [Node.js](https://nodejs.org) installed
@@ -16,7 +18,6 @@ npm run tauri dev
 npm run tauri build
 ```
 it will appear in `src-tauri/target/release`
-
 
 # Stack
 
