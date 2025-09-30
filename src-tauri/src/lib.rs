@@ -51,6 +51,7 @@ pub fn run() {
             let tray_handle = handle.clone();
             TrayIconBuilder::new()
                 .menu(&menu)
+                .tooltip("Kiroku")
                 .show_menu_on_left_click(false)
                 .icon(app.default_window_icon().unwrap().clone())
                 .on_menu_event(move |app, event| match event.id.as_ref() {
