@@ -1,7 +1,7 @@
 use base64::Engine;
 use tauri::{image::Image, AppHandle};
 use tauri_plugin_clipboard_manager::ClipboardExt;
-use std::{collections::VecDeque, sync::Mutex};
+use std::{collections::VecDeque, path::PathBuf, sync::Mutex};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -16,6 +16,26 @@ pub struct HistoryState {
     pub last_text: Mutex<String>,
     pub last_image: Mutex<String>,
     pub last_image_hash: Mutex<u64>,
+    pub file_path: PathBuf,
+}
+
+impl HistoryState {
+    pub fn save_to_file(&self) {
+        if let Ok(items) = self.items.lock() {
+            let json = serde_json::to_string(&*items).unwrap_or_default();
+            let _ = std::fs::write(&self.file_path, json);
+        }
+    }
+
+    pub fn load(&self) {
+        if let Ok(data) = std::fs::read_to_string(&self.file_path) {
+            if let Ok(vec) = serde_json::from_str::<VecDeque<HistoryItem>>(&data) {
+                if let Ok(mut items) = self.items.lock() {
+                    *items = vec;
+                }
+            }
+        }
+    }
 }
 
 #[tauri::command]
@@ -59,4 +79,6 @@ pub fn clear_history(state: tauri::State<HistoryState>, app: AppHandle) {
 
     let clipboard = app.clipboard();
     let _ = clipboard.write_text("");
+
+    state.save_to_file();
 }

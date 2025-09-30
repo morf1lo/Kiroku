@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "kiroku",
-  "version": "0.1.0",
-  "identifier": "org.morf1lo.kiroku",
+  "productName": "Kiroku",
+  "version": "1.0.0",
+  "identifier": "github.morf1lo.kiroku",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",

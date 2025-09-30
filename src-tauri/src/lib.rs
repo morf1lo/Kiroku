@@ -12,15 +12,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let state = commands::HistoryState {
-        items: Mutex::new(VecDeque::new()),
-        last_text: Mutex::new(String::new()),
-        last_image: Mutex::new(String::new()),
-        last_image_hash: Mutex::new(0u64),
-    };
-
     tauri::Builder::default()
-        .manage(state)
         .invoke_handler(tauri::generate_handler![
             commands::get_history,
             commands::copy_to_clipboard,
@@ -36,6 +28,26 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
+            let path = app
+                .path()
+                .resolve("history.json", tauri::path::BaseDirectory::AppConfig)?;
+
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+
+            let state = commands::HistoryState {
+                items: Mutex::new(VecDeque::new()),
+                last_text: Mutex::new(String::new()),
+                last_image: Mutex::new(String::new()),
+                last_image_hash: Mutex::new(0u64),
+                file_path: path,
+            };
+
+            state.load();
+
+            app.manage(state);
+
             let handle = app.handle().clone();
             
             // Tray
@@ -98,6 +110,8 @@ pub fn run() {
                             }
                             *last_text = text;
                         }
+                        
+                        state.save_to_file();
                     }
 
                     if let Ok(image) = clipboard.read_image() {
@@ -129,6 +143,8 @@ pub fn run() {
 
                             *last_hash = hash;
                         }
+
+                        state.save_to_file();
                     }
 
                     thread::sleep(Duration::from_millis(2000));

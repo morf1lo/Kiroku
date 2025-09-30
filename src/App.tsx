@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       invoke<HistoryItem[]>("get_history").then(setHistory);
-    }, 1000);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
