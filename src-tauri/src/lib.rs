@@ -1,4 +1,5 @@
 mod commands;
+mod tray_icon;
 
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::{collections::VecDeque, io::Cursor};
@@ -6,7 +7,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 use base64::Engine;
-use tauri::{menu::{Menu, MenuItem}, tray::{TrayIconBuilder, TrayIconEvent}, Manager, WindowEvent};
+use tauri::{Manager, WindowEvent};
 use image::{DynamicImage, ImageOutputFormat, RgbaImage};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 
@@ -49,49 +50,8 @@ pub fn run() {
             app.manage(state);
 
             let handle = app.handle().clone();
-            
-            // Tray
-            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let hide_item = MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?;
-            let show_item = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[
-                &show_item,
-                &hide_item,
-                &quit_item,
-            ])?;
 
-            let tray_handle = handle.clone();
-            TrayIconBuilder::new()
-                .menu(&menu)
-                .tooltip("Kiroku")
-                .show_menu_on_left_click(false)
-                .icon(app.default_window_icon().unwrap().clone())
-                .on_menu_event(move |app, event| match event.id.as_ref() {
-                    "quit" => app.exit(1),
-                    "show" => {
-                        let window = app.get_webview_window("main").unwrap();
-                        let _ = window.show();
-                    },
-                    "hide" => {
-                        let window = app.get_webview_window("main").unwrap();
-                        let _ = window.hide();
-                    },
-                    _ => {}
-                })
-                .on_tray_icon_event(move |_tray, event| match event {
-                    TrayIconEvent::DoubleClick {
-                        id: _,
-                        position: _,
-                        rect: _,
-                        button: _,
-                    } => {
-                        if let Some(window) = tray_handle.get_webview_window("main") {
-                            let _ = window.show();
-                        }
-                    },
-                    _ => {}
-                })
-                .build(app)?;
+            let _ = tray_icon::build(&handle);
 
             // Storing history
             let thread_handle = handle.clone();
