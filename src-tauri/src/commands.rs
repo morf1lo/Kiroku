@@ -82,3 +82,14 @@ pub fn clear_history(state: tauri::State<HistoryState>, app: AppHandle) {
 
     state.save_to_file();
 }
+
+#[tauri::command]
+pub fn remove_item(state: tauri::State<HistoryState>, index: usize) -> Result<VecDeque<HistoryItem>, String> {
+    let mut items = state.items.lock().unwrap();
+    if index > items.len()-1 {
+        Err(format!("Invalid index {}", index))
+    } else {
+        let _ = items.remove(index);
+        Ok(items.clone())
+    }
+}

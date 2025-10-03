@@ -18,6 +18,7 @@ pub fn run() {
             commands::get_history,
             commands::copy_to_clipboard,
             commands::clear_history,
+            commands::remove_item,
         ])
         .on_window_event(move |window, event| match event {
             WindowEvent::CloseRequested { api, .. } => {

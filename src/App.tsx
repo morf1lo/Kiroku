@@ -30,6 +30,10 @@ function App() {
     setPreviewImage(item.data);
   };
 
+  const removeItem = (index: number) => {
+    invoke<HistoryItem[]>("remove_item", { index }).then(setHistory);
+  }
+
   return (
     <div className="app">
       <div className="header">
@@ -40,6 +44,7 @@ function App() {
           <div className="item" key={i}>
             {item.type === "Text" ? (
               <>
+                <Button text="X" onClick={() => removeItem(i)} color="#c40021" />
                 <div className="item-copy">
                   <p style={{ color: "#f1f1f1", fontFamily: "monospace" }}>TEXT</p>
                   <Button text="Copy" onClick={() => copy(item)} />
@@ -54,6 +59,7 @@ function App() {
               </>
             ) : (
               <>
+                <Button text="X" onClick={() => removeItem(i)} color="#c40021" />
                 <div className="item-copy">
                   <p style={{ color: "#f1f1f1", fontFamily: "monospace" }}>IMAGE</p>
                   <div style={{ display: "flex", "gap": "5px" }}>
