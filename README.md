@@ -3,7 +3,7 @@
 # How to run?
 
 ## Download release
-Go to `Releases` and download `kiroku.exe` file, then just run it
+Go to `Releases` and download `kiroku.zip` archive. Extract it and run `kiroku.exe` file
 
 ## Development
 
